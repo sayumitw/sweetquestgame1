@@ -1,0 +1,487 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sweet Quest JS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #2d2d2d;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 360px;
+            height: 640px;
+            background: #fbcfe8;
+            border: 4px solid #f9a8d4;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        canvas {
+            background: #ffecf5;
+            border-radius: 12px 12px 0 0;
+            width: 100%;
+            /* 之前提到的修改：高度加高，把紫色區塊往下擠 */
+            height: 400px; 
+            image-rendering: pixelated;
+        }
+
+        #ui-layer {
+            flex: 1;
+            background: #6d28d9;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-top: 4px solid #4c1d95;
+            border-radius: 0 0 12px 12px;
+            justify-content: center;
+        }
+
+        .grid-rows {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        button {
+            height: 48px;
+            border: 2px solid rgba(0,0,0,0.2); /* 輕微邊框 */
+            border-radius: 10px;
+            font-size: 20px;
+            color: white;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+            cursor: pointer;
+            
+            /* --- 扁平化設定 --- */
+            position: relative;
+            box-shadow: none !important; /* 強制移除陰影 */
+            transition: transform 0.1s, opacity 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button:active {
+            /* 移除陰影後，按壓效果改為稍微縮小 */
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        /* 顏色按鈕 (只有背景色，沒有陰影了) */
+        .btn-red    { background: #ef4444; }
+        .btn-green  { background: #10b981; }
+        .btn-yellow { background: #facc15; }
+        .btn-dark   { background: #374151; } 
+        .btn-pink   { background: #f472b6; } 
+        .btn-blue   { background: #60a5fa; } 
+        .btn-purple { background: #a855f7; } 
+        .btn-brown  { background: #92400e; } 
+        
+        .btn-white { background: #f3f4f6; border-color: #ccc; }
+        .btn-choco { background: #78350f; }
+        .btn-cream { background: #fef3c7; border-color: #eab308; }
+        
+        .btn-action { background: #8b5cf6; grid-column: span 4; color: white; font-size: 14px; }
+
+        #info-panel {
+            background: #1e3a8a;
+            color: white;
+            font-size: 9px;
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            line-height: 1.5;
+            border: 2px solid #172554;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="360" height="400"></canvas>
+
+    <div id="ui-layer">
+        <div id="info-panel">LOADING...</div>
+        <div id="controls"></div>
+    </div>
+</div>
+
+<script>
+/**
+ * SWEET QUEST - Final Flat Version
+ */
+
+const CONFIG = {
+    bgImageSrc: 'bg.jpg', 
+    score: 980115,
+    colors: {
+        red:    '#ef4444',
+        green:  '#10b981',
+        yellow: '#facc15',
+        dark:   '#374151',
+        white:  '#ffffff',
+        choco:  '#78350f',
+        cream:  '#fef3c7',
+        pink:   '#f472b6',
+        purple: '#a855f7',
+        blue:   '#60a5fa',
+        brown:  '#92400e'
+    },
+    coverPatch: {
+        x: 180,
+        y: 380, // 配合新畫布高度下移
+        w: 110,
+        h: 90,
+        color: '#a5d8ff' 
+    }
+};
+
+const RECIPES = [
+    { id: 'RED_VELVET', name: 'Red Velvet', shell: 'red',    cream: 'white' },
+    { id: 'MINT_CHOCO', name: 'Mint Choco', shell: 'green',  cream: 'choco' },
+    { id: 'CHEESE',     name: 'Cheese',     shell: 'yellow', cream: 'cream' },
+    { id: 'OREO',       name: 'Oreo',       shell: 'dark',   cream: 'white' },
+    { id: 'STRAWBERRY', name: 'Strawberry', shell: 'pink',   cream: 'white' },
+    { id: 'SEA_SALT',   name: 'Sea Salt',   shell: 'blue',   cream: 'white' },
+    { id: 'BLUEBERRY',  name: 'Blueberry',  shell: 'purple', cream: 'cream' },
+    { id: 'CHOCO',      name: 'Double Choco', shell: 'brown', cream: 'choco' }
+];
+
+class Game {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+        
+        this.state = 'LOADING';
+        this.step = 0; 
+        this.currentOrder = null;
+        this.builtMacaron = { base: null, cream: null, top: null };
+        this.feedback = { text: '', alpha: 0, y: 0 };
+        
+        this.bgImg = new Image();
+        this.bgImg.src = CONFIG.bgImageSrc;
+        this.bgImg.onload = () => {
+            this.state = 'IDLE';
+            this.startLevel();
+            this.loop();
+        };
+        this.bgImg.onerror = () => {
+            this.state = 'IDLE';
+            this.startLevel();
+            this.loop();
+        };
+
+        this.infoPanel = document.getElementById('info-panel');
+        this.controls = document.getElementById('controls');
+    }
+
+    startLevel() {
+        this.currentOrder = RECIPES[Math.floor(Math.random() * RECIPES.length)];
+        this.step = 0;
+        this.builtMacaron = { base: null, cream: null, top: null };
+        this.updateUI();
+        this.triggerFeedback("NEW ORDER!", "#fff");
+    }
+
+    loop() {
+        this.update();
+        this.draw();
+        requestAnimationFrame(() => this.loop());
+    }
+
+    update() {
+        if (this.feedback.alpha > 0) {
+            this.feedback.alpha -= 0.02;
+            this.feedback.y -= 0.5;
+        }
+    }
+
+    draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        // 1. 背景
+        if (this.bgImg.complete && this.bgImg.naturalWidth !== 0) {
+            const aspect = this.bgImg.width / this.bgImg.height;
+            this.ctx.drawImage(this.bgImg, 0, 0, this.width, this.width / aspect); 
+        } else {
+            this.ctx.fillStyle = "#fbcfe8";
+            this.ctx.fillRect(0, 0, this.width, this.height);
+            this.ctx.font = "80px Arial";
+            this.ctx.textAlign = "center";
+            this.ctx.fillStyle = "#ff9ed2";
+            this.ctx.fillText("🐱", this.width/2, 350);
+        }
+
+        // 2. 遮罩
+        if (CONFIG.coverPatch.w > 0) {
+            this.ctx.fillStyle = CONFIG.coverPatch.color;
+            this.ctx.beginPath();
+            this.ctx.roundRect(
+                CONFIG.coverPatch.x - CONFIG.coverPatch.w/2, 
+                CONFIG.coverPatch.y - CONFIG.coverPatch.h/2, 
+                CONFIG.coverPatch.w, 
+                CONFIG.coverPatch.h, 
+                [40, 40, 10, 10]
+            );
+            this.ctx.fill();
+        }
+
+        // 3. 繪製馬卡龍 (配合畫布高度下移)
+        const cx = this.width / 2;
+        const cy = 380; // 馬卡龍位置
+
+        // 陰影
+        this.ctx.fillStyle = "rgba(0,0,0,0.1)";
+        this.ctx.beginPath();
+        this.ctx.ellipse(cx, cy + 30, 40, 10, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        if (this.step > 0 && this.builtMacaron.base) {
+            this.drawMacaronShell(cx, cy + 10, CONFIG.colors[this.builtMacaron.base]);
+        }
+        if (this.step > 1 && this.builtMacaron.cream) {
+            this.drawMacaronCream(cx, cy, CONFIG.colors[this.builtMacaron.cream]);
+        }
+        if (this.step > 2 && this.builtMacaron.top) {
+            this.drawMacaronShell(cx, cy - 15, CONFIG.colors[this.builtMacaron.top]);
+        }
+        if (this.step === 4) {
+             this.drawBox(cx, cy);
+        }
+
+        // 4. HUD
+        this.drawHUD();
+    }
+    
+    drawMacaronShell(x, y, color) {
+        this.ctx.fillStyle = color;
+        this.ctx.strokeStyle = "rgba(0,0,0,0.2)";
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.roundRect(x - 40, y, 80, 24, 12);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = color; 
+        this.ctx.beginPath();
+        this.ctx.roundRect(x - 38, y + 20, 76, 8, 4);
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        this.ctx.fillStyle = "rgba(255,255,255,0.3)";
+        this.ctx.beginPath();
+        this.ctx.ellipse(x - 20, y + 6, 10, 4, 0, 0, Math.PI*2);
+        this.ctx.fill();
+    }
+
+    drawMacaronCream(x, y, color) {
+        this.ctx.fillStyle = color;
+        this.ctx.beginPath();
+        this.ctx.roundRect(x - 35, y + 8, 70, 14, 5);
+        this.ctx.fill();
+    }
+
+    // 半透明盒子
+    drawBox(x, y) {
+        this.ctx.globalAlpha = 0.6; // 設定透明度
+        this.ctx.fillStyle = CONFIG.colors.purple;
+        this.ctx.beginPath();
+        this.ctx.roundRect(x - 50, y - 40, 100, 90, 10);
+        this.ctx.fill();
+        
+        this.ctx.globalAlpha = 1.0; // 恢復不透明 (重要！)
+        
+        this.ctx.strokeStyle = "#fff";
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = "#fff";
+        this.ctx.font = "10px 'Press Start 2P'";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("JUYEON", x, y);
+        this.ctx.fillText("BAKERY", x, y + 15);
+    }
+
+    drawHUD() {
+        // 訂單
+        if (this.currentOrder && this.step < 4) {
+            this.ctx.fillStyle = "white";
+            this.ctx.beginPath();
+            this.ctx.roundRect(10, 10, 130, 50, 8);
+            this.ctx.fill();
+            
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeStyle = "#333";
+            this.ctx.stroke();
+
+            this.ctx.fillStyle = "#666";
+            this.ctx.font = "8px 'Press Start 2P'";
+            this.ctx.textAlign = "left";
+            this.ctx.fillText("ORDER:", 20, 30);
+            
+            this.ctx.fillStyle = "#db2777"; 
+            this.ctx.font = "9px 'Press Start 2P'";
+            this.ctx.fillText(this.currentOrder.name, 20, 48);
+        }
+
+        // 分數
+        this.ctx.fillStyle = "rgba(0,0,0,0.6)"; 
+        this.ctx.beginPath();
+        this.ctx.roundRect(this.width - 150, 10, 140, 30, 6);
+        this.ctx.fill();
+
+        this.ctx.fillStyle = "#facc15"; 
+        this.ctx.font = "10px 'Press Start 2P'";
+        this.ctx.textAlign = "right";
+        this.ctx.fillText(`SCORE: ${CONFIG.score}`, this.width - 20, 30);
+
+        // 反饋文字
+        if (this.feedback.alpha > 0) {
+            this.ctx.globalAlpha = this.feedback.alpha;
+            this.ctx.fillStyle = "#fbbf24"; 
+            this.ctx.font = "20px 'Press Start 2P'";
+            this.ctx.textAlign = "center";
+            this.ctx.strokeStyle = "black";
+            this.ctx.lineWidth = 4;
+            this.ctx.strokeText(this.feedback.text, this.width/2, this.feedback.y);
+            this.ctx.fillText(this.feedback.text, this.width/2, this.feedback.y);
+            this.ctx.globalAlpha = 1.0;
+        }
+    }
+
+    triggerFeedback(text, color) {
+        this.feedback = {
+            text: text,
+            alpha: 2.0, 
+            y: this.height / 2
+        };
+    }
+
+    handleInput(type, value) {
+        let isCorrect = false;
+        if (this.step === 0) { // Base
+            if (value === this.currentOrder.shell) isCorrect = true;
+            if (isCorrect) this.builtMacaron.base = value;
+        } else if (this.step === 1) { // Cream
+            if (value === this.currentOrder.cream) isCorrect = true;
+            if (isCorrect) this.builtMacaron.cream = value;
+        } else if (this.step === 2) { // Top
+            if (value === this.currentOrder.shell) isCorrect = true;
+            if (isCorrect) this.builtMacaron.top = value;
+        }
+
+        if (isCorrect) {
+            this.step++;
+            this.updateUI();
+        } else {
+            this.triggerFeedback("WRONG!", "red");
+            if(navigator.vibrate) navigator.vibrate(200);
+        }
+    }
+
+    finishOrder() {
+        this.step = 4; 
+        CONFIG.score += 11;
+        this.triggerFeedback("PERFECT!", "gold");
+        this.updateUI();
+        
+        setTimeout(() => {
+            this.startLevel();
+        }, 1500);
+    }
+
+    updateUI() {
+        let html = '';
+        let infoText = '';
+
+        if (this.step === 0 || this.step === 2) {
+            const flavor = this.step === 0 ? "Base" : "Top";
+            infoText = `STEP ${this.step+1}: Choose ${flavor} Color`;
+            html = `
+                <div class="grid-rows">
+                    <button class="btn-red"    onclick="game.handleInput('shell', 'red')">🍪</button>
+                    <button class="btn-green"  onclick="game.handleInput('shell', 'green')">🍪</button>
+                    <button class="btn-yellow" onclick="game.handleInput('shell', 'yellow')">🍪</button>
+                    <button class="btn-dark"   onclick="game.handleInput('shell', 'dark')">🍪</button>
+                    
+                    <button class="btn-pink"   onclick="game.handleInput('shell', 'pink')">🍪</button>
+                    <button class="btn-blue"   onclick="game.handleInput('shell', 'blue')">🍪</button>
+                    <button class="btn-purple" onclick="game.handleInput('shell', 'purple')">🍪</button>
+                    <button class="btn-brown"  onclick="game.handleInput('shell', 'brown')">🍪</button>
+                </div>
+            `;
+        } else if (this.step === 1) {
+            infoText = `STEP 2: Squeeze Filling`;
+            html = `
+                <div class="grid-rows">
+                    <button class="btn-white" onclick="game.handleInput('cream', 'white')">🧴</button>
+                    <button class="btn-choco" onclick="game.handleInput('cream', 'choco')">🧴</button>
+                    <button class="btn-cream" onclick="game.handleInput('cream', 'cream')">🧴</button>
+                    <button class="btn-pink"  onclick="game.handleInput('cream', 'pink')">🧴</button>
+                </div>
+            `;
+        } else if (this.step === 3) {
+            infoText = "Ready to serve!";
+            html = `
+                <div class="grid-rows">
+                    <button class="btn-action" onclick="game.finishOrder()">🎁 SERVE ORDER 🎁</button>
+                </div>
+            `;
+        } else {
+            infoText = "Good Job!";
+        }
+
+        this.controls.innerHTML = html;
+        this.infoPanel.innerHTML = `<div>${infoText}</div>`;
+    }
+}
+
+const game = new Game('gameCanvas');
+
+</script>
+<script>window.parent.postMessage({ action: "ready" }, "*"); 
+ 
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console', 
+            type: prop, 
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            }) 
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+</script></body>
+</html>
