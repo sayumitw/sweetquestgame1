@@ -37,7 +37,7 @@
             border-radius: 12px 12px 0 0;
             width: 100%;
             /* 之前提到的修改：高度加高，把紫色區塊往下擠 */
-            height: 400px; 
+            height: 380px; 
             image-rendering: pixelated;
         }
 
@@ -50,7 +50,8 @@
             gap: 8px;
             border-top: 4px solid #4c1d95;
             border-radius: 0 0 12px 12px;
-            justify-content: center;
+            justify-content: flex-start; 
+            padding-top: 25px; 
         }
 
         .grid-rows {
@@ -116,7 +117,7 @@
 <body>
 
 <div id="game-container">
-    <canvas id="gameCanvas" width="360" height="400"></canvas>
+    <canvas id="gameCanvas" width="360" height="380"></canvas>
 
     <div id="ui-layer">
         <div id="info-panel">LOADING...</div>
@@ -130,8 +131,8 @@
  */
 
 const CONFIG = {
-    bgImageSrc: 'bg.jpg', 
-    score: 980115,
+    bgImageSrc: 'https://static.wixstatic.com/media/ededed_91db0b2169bd477b826b54a47ac6bacc~mv2.jpg', 
+    score: 000000,
     colors: {
         red:    '#ef4444',
         green:  '#10b981',
@@ -148,8 +149,8 @@ const CONFIG = {
     coverPatch: {
         x: 180,
         y: 380, // 配合新畫布高度下移
-        w: 110,
-        h: 90,
+        w: 0,
+        h: 0,
         color: '#a5d8ff' 
     }
 };
@@ -248,7 +249,7 @@ class Game {
 
         // 3. 繪製馬卡龍 (配合畫布高度下移)
         const cx = this.width / 2;
-        const cy = 380; // 馬卡龍位置
+        const cy = 340; // 馬卡龍位置
 
         // 陰影
         this.ctx.fillStyle = "rgba(0,0,0,0.1)";
