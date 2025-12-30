@@ -567,14 +567,15 @@ class Game {
             this.ctx.fillText("ORDER:", bubbleX + bubbleW/2, bubbleY + 20);
             
             const shellColor = CONFIG.colors[this.currentOrder.shell];
-            this.ctx.font = "9px 'Press Start 2P'";
+            this.ctx.font = "10px 'Press Start 2P'"; // 字體改為 10px
             this.ctx.strokeStyle = "#000";
-            this.ctx.lineWidth = 2;
+            this.ctx.lineWidth = 0.8; // 描邊改細為 0.8
+            this.ctx.lineJoin = "round"; // 圓滑連接
             this.ctx.strokeText(this.currentOrder.name, bubbleX + bubbleW/2, bubbleY + 38);
             
             this.ctx.fillStyle = shellColor; 
             this.ctx.fillText(this.currentOrder.name, bubbleX + bubbleW/2, bubbleY + 38);
-        }
+            }
 
         // 反饋
         if (this.feedback.alpha > 0) {
@@ -584,7 +585,7 @@ class Game {
             this.ctx.textAlign = "center";
             this.ctx.strokeStyle = "black";
             this.ctx.lineWidth = 4;
-            this.ctx.strokeText(this.feedback.text, this.width/2, this.feedback.y);
+            this.ctx.strokeText(this.feedback.text, this.width/0.8, this.feedback.y);
             this.ctx.fillText(this.feedback.text, this.width/2, this.feedback.y);
             this.ctx.globalAlpha = 1.0;
         }
