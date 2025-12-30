@@ -20,7 +20,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: var(--game-font); /* 套用字型設定 */
+            font-family: var(--game-font);
             overflow: hidden;
             touch-action: none;
         }
@@ -78,7 +78,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: var(--game-font); /* 按鈕支援中韓文 */
+            font-family: var(--game-font);
         }
         
         button:active {
@@ -118,7 +118,7 @@
             line-height: 1.5;
             border: 2px solid #172554;
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-            font-family: var(--game-font); /* 資訊欄支援中韓文 */
+            font-family: var(--game-font);
         }
 
         .fullscreen-overlay {
@@ -144,6 +144,7 @@
             margin-bottom: 10px;
             line-height: 1.2;
             font-family: var(--game-font);
+            padding: 0 10px;
         }
 
         .fullscreen-overlay p {
@@ -201,8 +202,8 @@
         <div id="controls"></div>
     </div>
 
-    <!-- Exit 按鈕 -->
-    <button id="exit-btn" onclick="exitGame()" style="display:none;">EXIT</button>
+    <!-- Exit 按鈕：現在點擊會傳入 'manual' 代表手動結束 -->
+    <button id="exit-btn" onclick="exitGame('manual')" style="display:none;">EXIT</button>
 
     <!-- 起始畫面 -->
     <div id="start-screen" class="fullscreen-overlay">
@@ -213,7 +214,7 @@
 
     <!-- 結算畫面 -->
     <div id="result-screen" class="fullscreen-overlay" style="display:none;">
-        <h1 style="color: #ef4444; text-shadow: 4px 4px 0 #7f1d1d;">GAME OVER</h1>
+        <h1 id="result-title" style="color: #ef4444; text-shadow: 4px 4px 0 #7f1d1d;">GAME OVER</h1>
         <p style="font-size: 12px; margin-top: 20px;">
             FINAL SCORE<br><br>
             <span id="final-score" style="color:#facc15; font-size: 16px;">0</span>
@@ -224,7 +225,7 @@
 
 <script>
 /**
- * SWEET QUEST - Pixel Icons + CJK Fonts Support
+ * SWEET QUEST - Pixel Icons + CJK Fonts + Custom Endings
  */
 
 const CONFIG = {
@@ -252,7 +253,6 @@ const CONFIG = {
     }
 };
 
-// --- Canvas 字型設定 (支援多國語言) ---
 const FONT_FAMILY = "'Press Start 2P', 'Noto Sans TC', 'Noto Sans KR', sans-serif";
 
 const RECIPES = [
@@ -395,7 +395,7 @@ class Game {
         this.ctx.strokeRect(40, 60, this.width - 80, 260);
 
         this.ctx.fillStyle = "#fff";
-        this.ctx.font = "16px " + FONT_FAMILY; // 使用變數
+        this.ctx.font = "16px " + FONT_FAMILY;
         this.ctx.textAlign = "center";
         this.ctx.fillText("RECIPE HINT", this.width / 2, 100);
 
@@ -407,7 +407,7 @@ class Game {
         this.drawMacaronShell(hx, hy - 15, CONFIG.colors[this.currentOrder.shell]);
 
         this.ctx.fillStyle = CONFIG.colors[this.currentOrder.shell];
-        this.ctx.font = "12px " + FONT_FAMILY; // 使用變數
+        this.ctx.font = "12px " + FONT_FAMILY;
         this.ctx.strokeStyle = "#000";
         this.ctx.lineWidth = 3;
         this.ctx.strokeText(this.currentOrder.name, hx, 260);
@@ -456,7 +456,7 @@ class Game {
         this.ctx.stroke();
 
         this.ctx.fillStyle = "#fff";
-        this.ctx.font = "10px " + FONT_FAMILY; // 使用變數
+        this.ctx.font = "10px " + FONT_FAMILY;
         this.ctx.textAlign = "center";
         this.ctx.fillText("JUYEON", x, y);
         this.ctx.fillText("DAY🐱", x, y + 15);
@@ -553,7 +553,7 @@ class Game {
         this.ctx.fill();
 
         this.ctx.fillStyle = "#facc15"; 
-        this.ctx.font = "10px " + FONT_FAMILY; // 使用變數
+        this.ctx.font = "10px " + FONT_FAMILY;
         this.ctx.textAlign = "left";
         this.ctx.fillText(`SCORE: ${CONFIG.score}`, 22, 69);
 
@@ -571,12 +571,12 @@ class Game {
             this.drawSpeechBubble(bubbleX, bubbleY, bubbleW, bubbleH, 10);
 
             this.ctx.fillStyle = "#666";
-            this.ctx.font = "8px " + FONT_FAMILY; // 使用變數
+            this.ctx.font = "8px " + FONT_FAMILY;
             this.ctx.textAlign = "center"; 
             this.ctx.fillText("ORDER:", bubbleX + bubbleW/2, bubbleY + 20);
             
             const shellColor = CONFIG.colors[this.currentOrder.shell];
-            this.ctx.font = "10px " + FONT_FAMILY; // 使用變數
+            this.ctx.font = "10px " + FONT_FAMILY; 
             this.ctx.strokeStyle = "#000";
             this.ctx.lineWidth = 0.8; 
             this.ctx.lineJoin = "round"; 
@@ -590,11 +590,10 @@ class Game {
         if (this.feedback.alpha > 0) {
             this.ctx.globalAlpha = this.feedback.alpha;
             this.ctx.fillStyle = "#fbbf24"; 
-            this.ctx.font = "20px " + FONT_FAMILY; // 使用變數
+            this.ctx.font = "20px " + FONT_FAMILY;
             this.ctx.textAlign = "center";
             this.ctx.strokeStyle = "black";
             this.ctx.lineWidth = 4;
-            // 修正：原為 this.width/0.8 會導致描邊位置偏移，修正為 this.width/2 與 fillText 一致
             this.ctx.strokeText(this.feedback.text, this.width/2, this.feedback.y);
             this.ctx.fillText(this.feedback.text, this.width/2, this.feedback.y);
             this.ctx.globalAlpha = 1.0;
@@ -633,7 +632,8 @@ class Game {
             if(navigator.vibrate) navigator.vibrate(200);
             
             if (this.lives <= 0) {
-                exitGame(); 
+                // 修改：愛心扣完，傳入 'lost'
+                exitGame('lost'); 
             } else {
                 this.showHint = true;
                 clearTimeout(this.hintTimer);
@@ -662,7 +662,6 @@ class Game {
         if (this.step === 0 || this.step === 2) {
             const flavor = this.step === 0 ? "Base" : "Top";
             infoText = `STEP ${this.step+1}: Choose ${flavor} Color`;
-            // 使用 ICON_SHELL
             html = `
                 <div class="grid-rows">
                     <button class="btn-red"    onclick="game.handleInput('shell', 'red')">${ICON_SHELL}</button>
@@ -678,7 +677,6 @@ class Game {
             `;
         } else if (this.step === 1) {
             infoText = `STEP 2: Squeeze Filling`;
-            // 使用 ICON_BAG
             html = `
                 <div class="grid-rows">
                     <button class="btn-white" onclick="game.handleInput('cream', 'white')">${ICON_BAG}</button>
@@ -715,9 +713,25 @@ function startGame() {
     }, 500);
 }
 
-function exitGame() {
+// 修改：接收 reason 參數 ('manual' 或 'lost')
+function exitGame(reason) {
     game.state = 'GAME_OVER';
     document.getElementById('exit-btn').style.display = 'none';
+    
+    const titleEl = document.getElementById('result-title');
+    
+    if (reason === 'manual') {
+        // 自願結束：店長辛苦了
+        titleEl.innerHTML = "GREAT WORK,<br>BOSS!";
+        titleEl.style.color = "#f472b6"; // 粉紅色
+        titleEl.style.textShadow = "4px 4px 0 #db2777"; // 深粉色陰影
+    } else {
+        // 失敗結束：再多加油
+        titleEl.innerHTML = "DON'T<br>GIVE UP!";
+        titleEl.style.color = "#ef4444"; // 紅色
+        titleEl.style.textShadow = "4px 4px 0 #7f1d1d"; // 深紅陰影
+    }
+
     document.getElementById('final-score').innerText = CONFIG.score;
     document.getElementById('result-screen').style.display = 'flex';
 }
