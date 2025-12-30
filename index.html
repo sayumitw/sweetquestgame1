@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sweet Quest JS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- 引入字型：Press Start 2P (像素) + Noto Sans TC (中文) + Noto Sans KR (韓文) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* 定義字型變數：優先像素字，缺字時自動使用中韓文 */
+            --game-font: 'Press Start 2P', 'Noto Sans TC', 'Noto Sans KR', cursive, sans-serif;
+        }
+
         body {
             background-color: #2d2d2d;
             margin: 0;
@@ -14,7 +20,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font); /* 套用字型設定 */
             overflow: hidden;
             touch-action: none;
         }
@@ -64,7 +70,6 @@
             border: 2px solid rgba(255,255,255,0.4); 
             border-radius: 10px;
             font-size: 20px;
-            /* 移除原本的文字顏色設置，改由 SVG 控制 */
             cursor: pointer;
             position: relative;
             box-shadow: none !important;
@@ -73,6 +78,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: var(--game-font); /* 按鈕支援中韓文 */
         }
         
         button:active {
@@ -80,11 +86,10 @@
             opacity: 0.8;
         }
 
-        /* 按鈕內的 SVG icon 樣式 */
         .pixel-icon {
             width: 24px;
             height: 24px;
-            filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.4)); /* 增加陰影讓它在淺色按鈕也看得見 */
+            filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.4)); 
             pointer-events: none;
         }
 
@@ -113,6 +118,7 @@
             line-height: 1.5;
             border: 2px solid #172554;
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+            font-family: var(--game-font); /* 資訊欄支援中韓文 */
         }
 
         .fullscreen-overlay {
@@ -137,19 +143,21 @@
             text-shadow: 4px 4px 0 #db2777;
             margin-bottom: 10px;
             line-height: 1.2;
+            font-family: var(--game-font);
         }
 
         .fullscreen-overlay p {
             font-size: 12px;
             color: #e5e7eb;
             margin-bottom: 40px;
+            font-family: var(--game-font);
         }
 
         .big-btn {
             background: #db2777;
             border: 4px solid #fff;
             color: #fff;
-            font-family: 'Press Start 2P', cursive;
+            font-family: var(--game-font);
             padding: 15px 30px;
             font-size: 18px;
             cursor: pointer;
@@ -172,6 +180,7 @@
             box-shadow: 2px 2px 0 rgba(0,0,0,0.3) !important;
             color: white;
             text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+            font-family: var(--game-font);
         }
 
         @keyframes pulse {
@@ -215,7 +224,7 @@
 
 <script>
 /**
- * SWEET QUEST - Pixel Icons Edition
+ * SWEET QUEST - Pixel Icons + CJK Fonts Support
  */
 
 const CONFIG = {
@@ -243,6 +252,9 @@ const CONFIG = {
     }
 };
 
+// --- Canvas 字型設定 (支援多國語言) ---
+const FONT_FAMILY = "'Press Start 2P', 'Noto Sans TC', 'Noto Sans KR', sans-serif";
+
 const RECIPES = [
     { id: 'RED_VELVET', name: 'Red Velvet', shell: 'red',    cream: 'white' },
     { id: 'MINT_CHOCO', name: 'Mint Choco', shell: 'green',  cream: 'choco' },
@@ -254,15 +266,12 @@ const RECIPES = [
     { id: 'CHOCO',      name: 'Double Choco', shell: 'brown', cream: 'choco' }
 ];
 
-// --- 像素風圖示 (SVG) ---
-// 小圓餅 (Shell): 圓潤外形，平滑表面
 const ICON_SHELL = `
 <svg class="pixel-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M7 6H17V7H19V9H21V15H19V17H17V18H7V17H5V15H3V9H5V7H7V6Z" fill="white"/>
     <path d="M5 15H19V17H17V18H7V17H5V15Z" fill="black" fill-opacity="0.2"/>
 </svg>`;
 
-// 擠花袋 (Bag): 斜向，擠出奶油
 const ICON_BAG = `
 <svg class="pixel-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M16 3L21 8L11 18L6 18L6 13L16 3Z" fill="white"/>
@@ -386,7 +395,7 @@ class Game {
         this.ctx.strokeRect(40, 60, this.width - 80, 260);
 
         this.ctx.fillStyle = "#fff";
-        this.ctx.font = "16px 'Press Start 2P'";
+        this.ctx.font = "16px " + FONT_FAMILY; // 使用變數
         this.ctx.textAlign = "center";
         this.ctx.fillText("RECIPE HINT", this.width / 2, 100);
 
@@ -398,7 +407,7 @@ class Game {
         this.drawMacaronShell(hx, hy - 15, CONFIG.colors[this.currentOrder.shell]);
 
         this.ctx.fillStyle = CONFIG.colors[this.currentOrder.shell];
-        this.ctx.font = "12px 'Press Start 2P'";
+        this.ctx.font = "12px " + FONT_FAMILY; // 使用變數
         this.ctx.strokeStyle = "#000";
         this.ctx.lineWidth = 3;
         this.ctx.strokeText(this.currentOrder.name, hx, 260);
@@ -447,7 +456,7 @@ class Game {
         this.ctx.stroke();
 
         this.ctx.fillStyle = "#fff";
-        this.ctx.font = "10px 'Press Start 2P'";
+        this.ctx.font = "10px " + FONT_FAMILY; // 使用變數
         this.ctx.textAlign = "center";
         this.ctx.fillText("JUYEON", x, y);
         this.ctx.fillText("DAY🐱", x, y + 15);
@@ -544,7 +553,7 @@ class Game {
         this.ctx.fill();
 
         this.ctx.fillStyle = "#facc15"; 
-        this.ctx.font = "10px 'Press Start 2P'";
+        this.ctx.font = "10px " + FONT_FAMILY; // 使用變數
         this.ctx.textAlign = "left";
         this.ctx.fillText(`SCORE: ${CONFIG.score}`, 22, 69);
 
@@ -562,15 +571,15 @@ class Game {
             this.drawSpeechBubble(bubbleX, bubbleY, bubbleW, bubbleH, 10);
 
             this.ctx.fillStyle = "#666";
-            this.ctx.font = "8px 'Press Start 2P'";
+            this.ctx.font = "8px " + FONT_FAMILY; // 使用變數
             this.ctx.textAlign = "center"; 
             this.ctx.fillText("ORDER:", bubbleX + bubbleW/2, bubbleY + 20);
             
             const shellColor = CONFIG.colors[this.currentOrder.shell];
-            this.ctx.font = "10px 'Press Start 2P'"; // 字體改為 10px
+            this.ctx.font = "10px " + FONT_FAMILY; // 使用變數
             this.ctx.strokeStyle = "#000";
-            this.ctx.lineWidth = 0.8; // 描邊改細為 0.8
-            this.ctx.lineJoin = "round"; // 圓滑連接
+            this.ctx.lineWidth = 0.8; 
+            this.ctx.lineJoin = "round"; 
             this.ctx.strokeText(this.currentOrder.name, bubbleX + bubbleW/2, bubbleY + 38);
             
             this.ctx.fillStyle = shellColor; 
@@ -581,11 +590,12 @@ class Game {
         if (this.feedback.alpha > 0) {
             this.ctx.globalAlpha = this.feedback.alpha;
             this.ctx.fillStyle = "#fbbf24"; 
-            this.ctx.font = "20px 'Press Start 2P'";
+            this.ctx.font = "20px " + FONT_FAMILY; // 使用變數
             this.ctx.textAlign = "center";
             this.ctx.strokeStyle = "black";
             this.ctx.lineWidth = 4;
-            this.ctx.strokeText(this.feedback.text, this.width/0.8, this.feedback.y);
+            // 修正：原為 this.width/0.8 會導致描邊位置偏移，修正為 this.width/2 與 fillText 一致
+            this.ctx.strokeText(this.feedback.text, this.width/2, this.feedback.y);
             this.ctx.fillText(this.feedback.text, this.width/2, this.feedback.y);
             this.ctx.globalAlpha = 1.0;
         }
