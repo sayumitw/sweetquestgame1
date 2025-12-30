@@ -29,7 +29,7 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* 確保遮罩不跑出去 */
+            overflow: hidden; 
         }
 
         canvas {
@@ -40,16 +40,13 @@
             image-rendering: pixelated;
         }
 
-        /* --- 修改重點：UI 層改為粉紅色 90% 透明度 --- */
         #ui-layer {
             flex: 1;
-            /* 使用 rgba 設定粉紅色 #f9a8d4 的 90% 透明度 */
-            background: rgba(249, 168, 212, 0.8);
+            background: rgba(249, 168, 212, 0.9);
             padding: 10px;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            /* 邊框顏色稍微加深一點點的粉紅，讓界線清楚一點 */
             border-top: 4px solid rgba(244, 114, 182, 0.5);
             border-radius: 0 0 12px 12px;
             justify-content: flex-start; 
@@ -64,11 +61,10 @@
 
         button {
             height: 48px;
-            border: 2px solid rgba(255,255,255,0.4); /* 按鈕邊框改淡一點 */
+            border: 2px solid rgba(255,255,255,0.4); 
             border-radius: 10px;
             font-size: 20px;
-            color: white;
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+            /* 移除原本的文字顏色設置，改由 SVG 控制 */
             cursor: pointer;
             position: relative;
             box-shadow: none !important;
@@ -84,7 +80,14 @@
             opacity: 0.8;
         }
 
-        /* 按鈕顏色定義 */
+        /* 按鈕內的 SVG icon 樣式 */
+        .pixel-icon {
+            width: 24px;
+            height: 24px;
+            filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.4)); /* 增加陰影讓它在淺色按鈕也看得見 */
+            pointer-events: none;
+        }
+
         .btn-red    { background: #ef4444; }
         .btn-green  { background: #10b981; }
         .btn-yellow { background: #facc15; }
@@ -94,14 +97,14 @@
         .btn-purple { background: #a855f7; } 
         .btn-brown  { background: #92400e; } 
         
-        .btn-white { background: #f3f4f6; border-color: #ccc; color: #333; text-shadow: none; }
+        .btn-white { background: #f3f4f6; border-color: #ccc; }
         .btn-choco { background: #78350f; }
-        .btn-cream { background: #fef3c7; border-color: #eab308; color: #333; text-shadow: none;}
+        .btn-cream { background: #fef3c7; border-color: #eab308; }
         
-        .btn-action { background: #8b5cf6; grid-column: span 4; color: white; font-size: 14px; }
+        .btn-action { background: #8b5cf6; grid-column: span 4; color: white; font-size: 14px; text-shadow: 1px 1px 0 rgba(0,0,0,0.2);}
 
         #info-panel {
-            background: #1e3a8a; /* 保持深藍色像螢幕 */
+            background: #1e3a8a; 
             color: white;
             font-size: 9px;
             padding: 6px;
@@ -112,14 +115,13 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
         }
 
-        /* --- 新增：起始畫面樣式 --- */
-        #start-screen {
+        .fullscreen-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85); /* 深色遮罩 */
+            background: rgba(0, 0, 0, 0.85); 
             z-index: 50;
             display: flex;
             flex-direction: column;
@@ -129,7 +131,7 @@
             text-align: center;
         }
 
-        #start-screen h1 {
+        .fullscreen-overlay h1 {
             font-size: 32px;
             color: #f9a8d4;
             text-shadow: 4px 4px 0 #db2777;
@@ -137,13 +139,13 @@
             line-height: 1.2;
         }
 
-        #start-screen p {
+        .fullscreen-overlay p {
             font-size: 12px;
             color: #e5e7eb;
             margin-bottom: 40px;
         }
 
-        .start-btn {
+        .big-btn {
             background: #db2777;
             border: 4px solid #fff;
             color: #fff;
@@ -152,6 +154,24 @@
             font-size: 18px;
             cursor: pointer;
             animation: pulse 1.5s infinite;
+        }
+
+        #exit-btn {
+            position: absolute;
+            bottom: 15px; 
+            right: 15px;  
+            top: auto;    
+            width: auto;
+            height: auto;
+            padding: 8px 12px;
+            font-size: 10px;
+            background: #ec4899; 
+            border: 2px solid #fff;
+            border-radius: 6px;
+            z-index: 100;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3) !important;
+            color: white;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
         }
 
         @keyframes pulse {
@@ -172,17 +192,30 @@
         <div id="controls"></div>
     </div>
 
-    <!-- 新增起始畫面 -->
-    <div id="start-screen">
+    <!-- Exit 按鈕 -->
+    <button id="exit-btn" onclick="exitGame()" style="display:none;">EXIT</button>
+
+    <!-- 起始畫面 -->
+    <div id="start-screen" class="fullscreen-overlay">
         <h1>SWEET<br>QUEST</h1>
-        <p>Jyunyang's Macaron Shop</p>
-        <button class="start-btn" onclick="startGame()">START</button>
+        <p>Juyeon's Macaron Shop</p>
+        <button class="big-btn" onclick="startGame()">START</button>
+    </div>
+
+    <!-- 結算畫面 -->
+    <div id="result-screen" class="fullscreen-overlay" style="display:none;">
+        <h1 style="color: #ef4444; text-shadow: 4px 4px 0 #7f1d1d;">GAME OVER</h1>
+        <p style="font-size: 12px; margin-top: 20px;">
+            FINAL SCORE<br><br>
+            <span id="final-score" style="color:#facc15; font-size: 16px;">0</span>
+        </p>
+        <button class="big-btn" style="background:#10b981;" onclick="restartGame()">PLAY AGAIN</button>
     </div>
 </div>
 
 <script>
 /**
- * SWEET QUEST - Pink Edition
+ * SWEET QUEST - Pixel Icons Edition
  */
 
 const CONFIG = {
@@ -221,6 +254,22 @@ const RECIPES = [
     { id: 'CHOCO',      name: 'Double Choco', shell: 'brown', cream: 'choco' }
 ];
 
+// --- 像素風圖示 (SVG) ---
+// 小圓餅 (Shell): 圓潤外形，平滑表面
+const ICON_SHELL = `
+<svg class="pixel-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 6H17V7H19V9H21V15H19V17H17V18H7V17H5V15H3V9H5V7H7V6Z" fill="white"/>
+    <path d="M5 15H19V17H17V18H7V17H5V15Z" fill="black" fill-opacity="0.2"/>
+</svg>`;
+
+// 擠花袋 (Bag): 斜向，擠出奶油
+const ICON_BAG = `
+<svg class="pixel-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 3L21 8L11 18L6 18L6 13L16 3Z" fill="white"/>
+    <path d="M6 13L8 15L13 10L11 8L6 13Z" fill="black" fill-opacity="0.1"/>
+    <path d="M4 18H8V20H6V21H4V18Z" fill="white"/>
+</svg>`;
+
 class Game {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
@@ -228,30 +277,30 @@ class Game {
         this.width = this.canvas.width;
         this.height = this.canvas.height;
         
-        this.state = 'START_SCREEN'; // 初始狀態改為起始畫面
+        this.state = 'START_SCREEN'; 
         this.step = 0; 
         this.currentOrder = null;
         this.builtMacaron = { base: null, cream: null, top: null };
         this.feedback = { text: '', alpha: 0, y: 0 };
+        this.showHint = false;
+        this.hintTimer = null;
+
+        this.lives = 5; 
         
         this.bgImg = new Image();
         this.bgImg.src = CONFIG.bgImageSrc;
-        
-        // 圖片載入後只開啟循環，不開始關卡
-        this.bgImg.onload = () => {
-            this.loop();
-        };
-        this.bgImg.onerror = () => {
-            this.loop();
-        };
+        this.bgImg.onload = () => { this.loop(); };
+        this.bgImg.onerror = () => { this.loop(); };
 
         this.infoPanel = document.getElementById('info-panel');
         this.controls = document.getElementById('controls');
     }
 
-    // 真正開始遊戲的函式
     initGame() {
         this.state = 'PLAYING';
+        CONFIG.score = 0; 
+        this.lives = 5; 
+        document.getElementById('exit-btn').style.display = 'block'; 
         this.startLevel();
     }
 
@@ -259,13 +308,16 @@ class Game {
         this.currentOrder = RECIPES[Math.floor(Math.random() * RECIPES.length)];
         this.step = 0;
         this.builtMacaron = { base: null, cream: null, top: null };
+        this.showHint = false;
         this.updateUI();
         this.triggerFeedback("NEW ORDER!", "#fff");
     }
 
     loop() {
-        this.update();
-        this.draw();
+        if (this.state === 'PLAYING' || this.state === 'START_SCREEN') {
+             this.update();
+             this.draw();
+        }
         requestAnimationFrame(() => this.loop());
     }
 
@@ -279,38 +331,27 @@ class Game {
     draw() {
         this.ctx.clearRect(0, 0, this.width, this.height);
 
-        // 1. 背景
+        // 背景
         if (this.bgImg.complete && this.bgImg.naturalWidth !== 0) {
             const aspect = this.bgImg.width / this.bgImg.height;
             this.ctx.drawImage(this.bgImg, 0, 0, this.width, this.width / aspect); 
         } else {
             this.ctx.fillStyle = "#fbcfe8";
             this.ctx.fillRect(0, 0, this.width, this.height);
-            this.ctx.font = "80px Arial";
-            this.ctx.textAlign = "center";
-            this.ctx.fillStyle = "#ff9ed2";
-            this.ctx.fillText("🐱", this.width/2, 350);
         }
 
-        // 2. 遮罩
+        // 遮罩
         if (CONFIG.coverPatch.w > 0) {
             this.ctx.fillStyle = CONFIG.coverPatch.color;
             this.ctx.beginPath();
-            this.ctx.roundRect(
-                CONFIG.coverPatch.x - CONFIG.coverPatch.w/2, 
-                CONFIG.coverPatch.y - CONFIG.coverPatch.h/2, 
-                CONFIG.coverPatch.w, 
-                CONFIG.coverPatch.h, 
-                [40, 40, 10, 10]
-            );
+            this.ctx.roundRect(CONFIG.coverPatch.x - CONFIG.coverPatch.w/2, CONFIG.coverPatch.y - CONFIG.coverPatch.h/2, CONFIG.coverPatch.w, CONFIG.coverPatch.h, [40]);
             this.ctx.fill();
         }
 
-        // 3. 繪製馬卡龍
+        // 繪製馬卡龍
         const cx = this.width / 2;
         const cy = 340; 
 
-        // 陰影
         this.ctx.fillStyle = "rgba(0,0,0,0.1)";
         this.ctx.beginPath();
         this.ctx.ellipse(cx, cy + 30, 40, 10, 0, 0, Math.PI * 2);
@@ -329,8 +370,39 @@ class Game {
              this.drawBox(cx, cy);
         }
 
-        // 4. HUD
         this.drawHUD();
+
+        if (this.showHint && this.currentOrder) {
+            this.drawHintOverlay();
+        }
+    }
+
+    drawHintOverlay() {
+        this.ctx.fillStyle = "rgba(0,0,0,0.85)";
+        this.ctx.fillRect(40, 60, this.width - 80, 260);
+        
+        this.ctx.strokeStyle = "#fff";
+        this.ctx.lineWidth = 4;
+        this.ctx.strokeRect(40, 60, this.width - 80, 260);
+
+        this.ctx.fillStyle = "#fff";
+        this.ctx.font = "16px 'Press Start 2P'";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText("RECIPE HINT", this.width / 2, 100);
+
+        const hx = this.width / 2;
+        const hy = 200; 
+
+        this.drawMacaronShell(hx, hy + 10, CONFIG.colors[this.currentOrder.shell]);
+        this.drawMacaronCream(hx, hy, CONFIG.colors[this.currentOrder.cream]);
+        this.drawMacaronShell(hx, hy - 15, CONFIG.colors[this.currentOrder.shell]);
+
+        this.ctx.fillStyle = CONFIG.colors[this.currentOrder.shell];
+        this.ctx.font = "12px 'Press Start 2P'";
+        this.ctx.strokeStyle = "#000";
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeText(this.currentOrder.name, hx, 260);
+        this.ctx.fillText(this.currentOrder.name, hx, 260);
     }
     
     drawMacaronShell(x, y, color) {
@@ -378,45 +450,133 @@ class Game {
         this.ctx.font = "10px 'Press Start 2P'";
         this.ctx.textAlign = "center";
         this.ctx.fillText("JUYEON", x, y);
-        this.ctx.fillText("DAY", x, y + 15);
+        this.ctx.fillText("DAY🐱", x, y + 15);
+    }
+
+    drawHeartShape(x, y, size, type) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        
+        const topCurveHeight = size * 0.3;
+        this.ctx.moveTo(x, y + topCurveHeight);
+        this.ctx.bezierCurveTo(x, y, x - size/2, y, x - size/2, y + topCurveHeight);
+        this.ctx.bezierCurveTo(x - size/2, y + (size + topCurveHeight)/2, x, y + (size + topCurveHeight)/2 + 5, x, y + size);
+        this.ctx.bezierCurveTo(x, y + (size + topCurveHeight)/2 + 5, x + size/2, y + (size + topCurveHeight)/2, x + size/2, y + topCurveHeight);
+        this.ctx.bezierCurveTo(x + size/2, y, x, y, x, y + topCurveHeight);
+        this.ctx.closePath();
+
+        if (type === 'full') {
+            this.ctx.fillStyle = "#ef4444";
+            this.ctx.fill();
+        } else if (type === 'half') {
+            this.ctx.save();
+            this.ctx.clip(); 
+            this.ctx.fillStyle = "rgba(0,0,0,0.3)"; 
+            this.ctx.fillRect(x - size, y, size * 2, size * 2); 
+            this.ctx.fillStyle = "#ef4444";
+            this.ctx.fillRect(x - size, y, size, size * 2); 
+            this.ctx.restore();
+        } else {
+             this.ctx.fillStyle = "rgba(0,0,0,0.3)";
+             this.ctx.fill();
+        }
+        
+        this.ctx.strokeStyle = "#fff";
+        this.ctx.lineWidth = 1.5;
+        this.ctx.stroke();
+        this.ctx.restore();
+    }
+
+    drawSpeechBubble(x, y, w, h, radius) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + radius, y);
+        this.ctx.lineTo(x + w - radius, y);
+        this.ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        this.ctx.lineTo(x + w, y + h - radius);
+        this.ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        
+        this.ctx.lineTo(x + w/2 + 10, y + h);
+        this.ctx.lineTo(x + w/2, y + h + 10); 
+        this.ctx.lineTo(x + w/2 - 10, y + h);
+        
+        this.ctx.lineTo(x + radius, y + h);
+        this.ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        this.ctx.lineTo(x, y + radius);
+        this.ctx.quadraticCurveTo(x, y, x + radius, y);
+        this.ctx.closePath();
+        
+        this.ctx.fill();
+        this.ctx.stroke();
     }
 
     drawHUD() {
-        if (this.state !== 'PLAYING') return; // 如果還沒開始，不要畫分數和訂單
+        if (this.state !== 'PLAYING') return;
 
-        // 訂單
-        if (this.currentOrder && this.step < 4) {
-            this.ctx.fillStyle = "white";
-            this.ctx.beginPath();
-            this.ctx.roundRect(10, 10, 130, 50, 8);
-            this.ctx.fill();
-            
-            this.ctx.lineWidth = 3;
-            this.ctx.strokeStyle = "#333";
-            this.ctx.stroke();
-
-            this.ctx.fillStyle = "#666";
-            this.ctx.font = "8px 'Press Start 2P'";
-            this.ctx.textAlign = "left";
-            this.ctx.fillText("ORDER:", 20, 30);
-            
-            this.ctx.fillStyle = "#db2777"; 
-            this.ctx.font = "9px 'Press Start 2P'";
-            this.ctx.fillText(this.currentOrder.name, 20, 48);
-        }
-
-        // 分數
-        this.ctx.fillStyle = "rgba(0,0,0,0.6)"; 
+        // 愛心背景條
+        this.ctx.fillStyle = "#ffe4e6"; 
+        this.ctx.strokeStyle = "#22d3ee"; 
+        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
-        this.ctx.roundRect(this.width - 150, 10, 140, 30, 6);
+        this.ctx.roundRect(10, 10, 135, 36, 18);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // 繪製愛心
+        let startX = 32; 
+        let startY = 20; 
+        let heartSize = 18;
+        let gap = 24;
+
+        for (let i = 1; i <= 5; i++) {
+            let hType = 'empty';
+            if (this.lives >= i) {
+                hType = 'full';
+            } else if (this.lives > i - 1) {
+                hType = 'half';
+            }
+            this.drawHeartShape(startX + (i-1)*gap, startY, heartSize, hType);
+        }
+        
+        // 分數
+        this.ctx.fillStyle = "rgba(0,0,0,0.5)"; 
+        this.ctx.beginPath();
+        this.ctx.roundRect(15, 55, 110, 20, 6);
         this.ctx.fill();
 
         this.ctx.fillStyle = "#facc15"; 
         this.ctx.font = "10px 'Press Start 2P'";
-        this.ctx.textAlign = "right";
-        this.ctx.fillText(`SCORE: ${CONFIG.score}`, this.width - 20, 30);
+        this.ctx.textAlign = "left";
+        this.ctx.fillText(`SCORE: ${CONFIG.score}`, 22, 69);
 
-        // 反饋文字
+        // 訂單氣泡
+        if (this.currentOrder && this.step < 4) {
+            const bubbleW = 140;
+            const bubbleH = 50;
+            const bubbleX = this.width - bubbleW - 10;
+            const bubbleY = 10;
+
+            this.ctx.fillStyle = "white";
+            this.ctx.strokeStyle = "#333";
+            this.ctx.lineWidth = 3;
+            
+            this.drawSpeechBubble(bubbleX, bubbleY, bubbleW, bubbleH, 10);
+
+            this.ctx.fillStyle = "#666";
+            this.ctx.font = "8px 'Press Start 2P'";
+            this.ctx.textAlign = "center"; 
+            this.ctx.fillText("ORDER:", bubbleX + bubbleW/2, bubbleY + 20);
+            
+            const shellColor = CONFIG.colors[this.currentOrder.shell];
+            this.ctx.font = "9px 'Press Start 2P'";
+            this.ctx.strokeStyle = "#000";
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeText(this.currentOrder.name, bubbleX + bubbleW/2, bubbleY + 38);
+            
+            this.ctx.fillStyle = shellColor; 
+            this.ctx.fillText(this.currentOrder.name, bubbleX + bubbleW/2, bubbleY + 38);
+        }
+
+        // 反饋
         if (this.feedback.alpha > 0) {
             this.ctx.globalAlpha = this.feedback.alpha;
             this.ctx.fillStyle = "#fbbf24"; 
@@ -439,7 +599,6 @@ class Game {
     }
 
     handleInput(type, value) {
-        // 如果不在遊戲中，禁止操作
         if (this.state !== 'PLAYING') return;
 
         let isCorrect = false;
@@ -458,8 +617,19 @@ class Game {
             this.step++;
             this.updateUI();
         } else {
+            this.lives -= 0.5;
             this.triggerFeedback("WRONG!", "red");
             if(navigator.vibrate) navigator.vibrate(200);
+            
+            if (this.lives <= 0) {
+                exitGame(); 
+            } else {
+                this.showHint = true;
+                clearTimeout(this.hintTimer);
+                this.hintTimer = setTimeout(() => {
+                    this.showHint = false;
+                }, 1500);
+            }
         }
     }
 
@@ -481,27 +651,29 @@ class Game {
         if (this.step === 0 || this.step === 2) {
             const flavor = this.step === 0 ? "Base" : "Top";
             infoText = `STEP ${this.step+1}: Choose ${flavor} Color`;
+            // 使用 ICON_SHELL
             html = `
                 <div class="grid-rows">
-                    <button class="btn-red"    onclick="game.handleInput('shell', 'red')">🍪</button>
-                    <button class="btn-green"  onclick="game.handleInput('shell', 'green')">🍪</button>
-                    <button class="btn-yellow" onclick="game.handleInput('shell', 'yellow')">🍪</button>
-                    <button class="btn-dark"   onclick="game.handleInput('shell', 'dark')">🍪</button>
+                    <button class="btn-red"    onclick="game.handleInput('shell', 'red')">${ICON_SHELL}</button>
+                    <button class="btn-green"  onclick="game.handleInput('shell', 'green')">${ICON_SHELL}</button>
+                    <button class="btn-yellow" onclick="game.handleInput('shell', 'yellow')">${ICON_SHELL}</button>
+                    <button class="btn-dark"   onclick="game.handleInput('shell', 'dark')">${ICON_SHELL}</button>
                     
-                    <button class="btn-pink"   onclick="game.handleInput('shell', 'pink')">🍪</button>
-                    <button class="btn-blue"   onclick="game.handleInput('shell', 'blue')">🍪</button>
-                    <button class="btn-purple" onclick="game.handleInput('shell', 'purple')">🍪</button>
-                    <button class="btn-brown"  onclick="game.handleInput('shell', 'brown')">🍪</button>
+                    <button class="btn-pink"   onclick="game.handleInput('shell', 'pink')">${ICON_SHELL}</button>
+                    <button class="btn-blue"   onclick="game.handleInput('shell', 'blue')">${ICON_SHELL}</button>
+                    <button class="btn-purple" onclick="game.handleInput('shell', 'purple')">${ICON_SHELL}</button>
+                    <button class="btn-brown"  onclick="game.handleInput('shell', 'brown')">${ICON_SHELL}</button>
                 </div>
             `;
         } else if (this.step === 1) {
             infoText = `STEP 2: Squeeze Filling`;
+            // 使用 ICON_BAG
             html = `
                 <div class="grid-rows">
-                    <button class="btn-white" onclick="game.handleInput('cream', 'white')">🧴</button>
-                    <button class="btn-choco" onclick="game.handleInput('cream', 'choco')">🧴</button>
-                    <button class="btn-cream" onclick="game.handleInput('cream', 'cream')">🧴</button>
-                    <button class="btn-pink"  onclick="game.handleInput('cream', 'pink')">🧴</button>
+                    <button class="btn-white" onclick="game.handleInput('cream', 'white')">${ICON_BAG}</button>
+                    <button class="btn-choco" onclick="game.handleInput('cream', 'choco')">${ICON_BAG}</button>
+                    <button class="btn-cream" onclick="game.handleInput('cream', 'cream')">${ICON_BAG}</button>
+                    <button class="btn-pink"  onclick="game.handleInput('cream', 'pink')">${ICON_BAG}</button>
                 </div>
             `;
         } else if (this.step === 3) {
@@ -522,7 +694,6 @@ class Game {
 
 const game = new Game('gameCanvas');
 
-// 全域開始函式
 function startGame() {
     const screen = document.getElementById('start-screen');
     screen.style.transition = 'opacity 0.5s';
@@ -531,6 +702,18 @@ function startGame() {
         screen.style.display = 'none';
         game.initGame();
     }, 500);
+}
+
+function exitGame() {
+    game.state = 'GAME_OVER';
+    document.getElementById('exit-btn').style.display = 'none';
+    document.getElementById('final-score').innerText = CONFIG.score;
+    document.getElementById('result-screen').style.display = 'flex';
+}
+
+function restartGame() {
+    document.getElementById('result-screen').style.display = 'none';
+    game.initGame();
 }
 
 </script>
