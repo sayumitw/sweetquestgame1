@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
-            var(--game-font: 'Press Start 2P', 'Noto Sans TC', 'Noto Sans KR', cursive, sans-serif);
+            --game-font: 'Press Start 2P', 'Noto Sans TC', 'Noto Sans KR', cursive, sans-serif;
         }
 
         body {
@@ -243,7 +243,7 @@
             border-bottom: 1px dashed rgba(255,255,255,0.2);
             color: #ffd1dc;
         }
-        .rank-row:first-child { color: #facc15; font-weight: bold; } /* 金色第一名 */
+        .rank-row:first-child { color: #facc15; font-weight: bold; }
 
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -308,15 +308,15 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 你的 Firebase 設定
+    // 使用你最新的 Firebase 設定 (yongyi-999e5)
     const firebaseConfig = {
-      apiKey: "AIzaSyB5Gvyb-0CwzAzeZxclAq_JC4ENc_jOmWA",
-      authDomain: "sweet-quest-db.firebaseapp.com",
-      projectId: "sweet-quest-db",
-      storageBucket: "sweet-quest-db.firebasestorage.app",
-      messagingSenderId: "73518821088",
-      appId: "1:73518821088:web:9e1a89a45ee273746c6a85",
-      measurementId: "G-SJJC8KK4HJ"
+      apiKey: "AIzaSyBdlPdaqxGriXGpnSfrF5V1-JvD4SF3bQU",
+      authDomain: "yongyi-999e5.firebaseapp.com",
+      projectId: "yongyi-999e5",
+      storageBucket: "yongyi-999e5.firebasestorage.app",
+      messagingSenderId: "1095860774070",
+      appId: "1:1095860774070:web:6df2dcbc6708d4eb54b217",
+      measurementId: "G-NY0VDZ5YR3"
     };
 
     // 初始化 Firebase
@@ -333,6 +333,7 @@
     window.submitScore = async function(name, score) {
         if (!db) return;
         try {
+            // 使用 leaderboard_macaron 集合
             await addDoc(collection(db, "leaderboard_macaron"), {
                 name: name || "Anonymous",
                 score: score,
@@ -860,9 +861,41 @@ function startGame() {
     const screen = document.getElementById('start-screen');
     const nameInput = document.getElementById('player-name');
     
-    // 取得名字，若為空則使用 GUEST
-    game.playerName = nameInput.value.trim().toUpperCase() || "GUEST";
+    // 取得原始輸入並去頭尾空白
+    let rawName = nameInput.value.trim();
+
+    // --- 🛡️ 名字過濾系統 ---
+    // 定義你想過濾的關鍵字 (包含髒話與特定人名)
+    const badWords = [
+        'FUCK', 'SHIT', 'BITCH', '笨蛋', '白痴', '死', 'SEX', // 髒話
+        '詩雅', 'SIA', '시아' // 🚫 指定屏蔽名字
+    ]; 
     
+    // 轉大寫來檢查 (確保 sia/Sia/SIA 都被抓到)
+    const upperName = rawName.toUpperCase();
+    
+    let isBad = false;
+    for (let word of badWords) {
+        // 如果輸入內容包含任一禁止詞 (轉換成大寫比對)
+        if (upperName.includes(word.toUpperCase())) {
+            isBad = true;
+            break;
+        }
+    }
+
+    // 如果發現禁止詞，強制改名
+    if (isBad) {
+        rawName = "JUYEON_FAN"; // 改成無害的名字
+        alert("This name is not allowed! Changed to JUYEON_FAN."); // 跳出警告
+    }
+    // --- 🛡️ 過濾結束 ---
+
+    // 若為空則使用 GUEST
+    game.playerName = rawName || "GUEST";
+    
+    // 確保名字全大寫顯示比較好看
+    game.playerName = game.playerName.toUpperCase();
+
     screen.style.transition = 'opacity 0.5s';
     screen.style.opacity = '0';
     setTimeout(() => {
