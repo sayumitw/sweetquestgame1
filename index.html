@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sweet Quest: Macaron Shop</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入字型 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -205,7 +204,6 @@
             background: rgba(244, 114, 182, 0.3);
         }
 
-        /* 輸入框樣式 */
         .retro-input {
             background: #2d2d2d;
             border: 2px dashed #f472b6;
@@ -222,7 +220,6 @@
         .retro-input::placeholder { color: #666; }
         .retro-input:focus { border-style: solid; border-color: #fff; }
 
-        /* 排行榜樣式 */
         #leaderboard-box {
             width: 80%;
             max-height: 150px;
@@ -266,36 +263,26 @@
     <!-- Exit 按鈕 -->
     <button id="exit-btn" onclick="exitGame('manual')" style="display:none;">EXIT</button>
 
-    <!-- 起始畫面 (包含名字輸入) -->
     <div id="start-screen" class="fullscreen-overlay">
         <h1>SWEET<br>QUEST</h1>
         <p>Juyeon's Macaron Shop</p>
-        
-        <!-- 新增名字輸入 -->
         <input type="text" id="player-name" class="retro-input" placeholder="YOUR NAME" maxlength="10">
-        
         <button class="big-btn" onclick="startGame()">START</button>
     </div>
 
-    <!-- 結算畫面 (包含排行榜) -->
     <div id="result-screen" class="fullscreen-overlay" style="display:none;">
         <h1 id="result-title" style="font-size:24px; margin-bottom:5px; color: #ef4444; text-shadow: 4px 4px 0 #7f1d1d;">GAME OVER</h1>
-        
         <p style="font-size: 12px; margin-bottom: 10px;">
             FINAL SCORE: <span id="final-score" style="color:#facc15; font-size: 16px;">0</span>
         </p>
-
-        <!-- 排行榜顯示區 -->
         <div style="font-size:10px; color:#f9a8d4;">TOP CHEFS</div>
         <div id="leaderboard-box">
             <div style="text-align:center; color:#999;">Loading...</div>
         </div>
-
         <button class="big-btn" style="background:#10b981; font-size:14px; padding:10px 20px;" onclick="restartGame()">PLAY AGAIN</button>
     </div>
 </div>
 
-<!-- IG 連結 -->
 <a href="https://www.instagram.com/tbzuyeon/" target="_blank" class="social-link">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
@@ -308,7 +295,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // ✅ 已更新為 sweet-quest-db 設定
     const firebaseConfig = {
       apiKey: "AIzaSyB5Gvyb-0CwzAzeZxclAq_JC4ENc_jOmWA",
       authDomain: "sweet-quest-db.firebaseapp.com",
@@ -319,7 +305,6 @@
       measurementId: "G-SJJC8KK4HJ"
     };
 
-    // 初始化 Firebase
     let db;
     try {
         const app = initializeApp(firebaseConfig);
@@ -329,17 +314,16 @@
         console.error("Firebase init failed:", e);
     }
 
-    // 將函數掛載到 window 以便主遊戲調用
+    // 將函數掛載到 window
     window.submitScore = async function(name, score) {
         if (!db) return;
         try {
-            // 使用 leaderboard_macaron 集合
             await addDoc(collection(db, "leaderboard_macaron"), {
                 name: name || "Anonymous",
                 score: score,
                 timestamp: new Date()
             });
-            console.log("Score saved!");
+            console.log("Score saved:", score);
         } catch (e) {
             console.error("Error saving score: ", e);
         }
@@ -351,7 +335,6 @@
         container.innerHTML = "<div style='text-align:center; color:#ccc;'>Loading...</div>";
         
         try {
-            // 查詢分數最高的前 5 名
             const q = query(collection(db, "leaderboard_macaron"), orderBy("score", "desc"), limit(5));
             const querySnapshot = await getDocs(q);
             
@@ -379,7 +362,7 @@
 
 <script>
 /**
- * SWEET QUEST - Macaron Shop with Firebase Integration
+ * SWEET QUEST - Macaron Shop with Auto-Save Feature
  */
 
 const CONFIG = {
@@ -447,6 +430,8 @@ class Game {
         this.feedback = { text: '', alpha: 0, y: 0 };
         this.showHint = false;
         this.hintTimer = null;
+        
+        this.isScoreSaved = false; // 用來防止重複上傳分數
 
         this.lives = 5; 
         this.playerName = "GUEST";
@@ -464,6 +449,7 @@ class Game {
         this.state = 'PLAYING';
         CONFIG.score = 0; 
         this.lives = 5; 
+        this.isScoreSaved = false; // 新局重置儲存狀態
         document.getElementById('exit-btn').style.display = 'block'; 
         this.startLevel();
     }
@@ -512,7 +498,6 @@ class Game {
             this.ctx.fill();
         }
 
-        // 繪製馬卡龍
         const cx = this.width / 2;
         const cy = 340; 
 
@@ -611,10 +596,10 @@ class Game {
         this.ctx.stroke();
 
         this.ctx.fillStyle = "#fff";
-        this.ctx.font = "8px " + FONT_FAMILY;
+        this.ctx.font = "10px " + FONT_FAMILY;
         this.ctx.textAlign = "center";
-        this.ctx.fillText(this.playerName, x, y); // Draw User Name
-        this.ctx.fillText("JUYEON DAY", x, y + 15);
+        this.ctx.fillText(this.playerName, x, y);
+        this.ctx.fillText("BAKERY", x, y + 15);
     }
 
     drawHeartShape(x, y, size, type) {
@@ -676,7 +661,6 @@ class Game {
     drawHUD() {
         if (this.state !== 'PLAYING') return;
 
-        // 愛心背景條
         this.ctx.fillStyle = "#ffe4e6"; 
         this.ctx.strokeStyle = "#22d3ee"; 
         this.ctx.lineWidth = 3;
@@ -685,7 +669,6 @@ class Game {
         this.ctx.fill();
         this.ctx.stroke();
 
-        // 繪製愛心
         let startX = 32; 
         let startY = 20; 
         let heartSize = 18;
@@ -701,7 +684,6 @@ class Game {
             this.drawHeartShape(startX + (i-1)*gap, startY, heartSize, hType);
         }
         
-        // 分數
         this.ctx.fillStyle = "rgba(0,0,0,0.5)"; 
         this.ctx.beginPath();
         this.ctx.roundRect(15, 55, 110, 20, 6);
@@ -712,7 +694,6 @@ class Game {
         this.ctx.textAlign = "left";
         this.ctx.fillText(`SCORE: ${CONFIG.score}`, 22, 69);
 
-        // 訂單氣泡
         if (this.currentOrder && this.step < 4) {
             const bubbleW = 140;
             const bubbleH = 50;
@@ -739,9 +720,8 @@ class Game {
             
             this.ctx.fillStyle = shellColor; 
             this.ctx.fillText(this.currentOrder.name, bubbleX + bubbleW/2, bubbleY + 38);
-            }
+        }
 
-        // 反饋
         if (this.feedback.alpha > 0) {
             this.ctx.globalAlpha = this.feedback.alpha;
             this.ctx.fillStyle = "#fbbf24"; 
@@ -857,43 +837,54 @@ class Game {
 
 const game = new Game('gameCanvas');
 
+// --- 監聽關閉或隱藏網頁事件 (Auto Save) ---
+
+// 1. 手機切換分頁或按 Home 鍵 (Visibility Change)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        attemptAutoSave();
+    }
+});
+
+// 2. 電腦端關閉分頁或重新整理 (Before Unload)
+window.addEventListener('beforeunload', (event) => {
+    attemptAutoSave();
+});
+
+// 自動儲存邏輯
+function attemptAutoSave() {
+    // 只有在遊戲進行中 (PLAYING) 且分數 > 0 且 尚未儲存過 才會執行
+    if (game.state === 'PLAYING' && CONFIG.score > 0 && !game.isScoreSaved) {
+        game.isScoreSaved = true; // 標記為已儲存，防止重複
+        if(window.submitScore) {
+            window.submitScore(game.playerName, CONFIG.score);
+        }
+    }
+}
+
 function startGame() {
     const screen = document.getElementById('start-screen');
     const nameInput = document.getElementById('player-name');
     
-    // 取得原始輸入並去頭尾空白
     let rawName = nameInput.value.trim();
 
-    // --- 🛡️ 名字過濾系統 ---
-    // 定義你想過濾的關鍵字 (包含髒話與特定人名)
-    const badWords = [
-        'FUCK', 'SHIT', 'BITCH', '笨蛋', '白痴', '死', 'SEX', // 髒話
-        '詩雅', 'SIA', '시아' // 🚫 指定屏蔽名字
-    ]; 
-    
-    // 轉大寫來檢查 (確保 sia/Sia/SIA 都被抓到)
+    const badWords = ['FUCK', 'SHIT', 'BITCH', '笨蛋', '白痴', '死', 'SEX', '詩雅', 'SIA', '시아']; 
     const upperName = rawName.toUpperCase();
     
     let isBad = false;
     for (let word of badWords) {
-        // 如果輸入內容包含任一禁止詞 (轉換成大寫比對)
         if (upperName.includes(word.toUpperCase())) {
             isBad = true;
             break;
         }
     }
 
-    // 如果發現禁止詞，強制改名
     if (isBad) {
-        rawName = "JUYEON_FAN"; // 改成無害的名字
-        alert("This name is not allowed! Changed to JUYEON_FAN."); // 跳出警告
+        rawName = "JUYEON_FAN";
+        alert("This name is not allowed! Changed to JUYEON_FAN.");
     }
-    // --- 🛡️ 過濾結束 ---
 
-    // 若為空則使用 GUEST
     game.playerName = rawName || "GUEST";
-    
-    // 確保名字全大寫顯示比較好看
     game.playerName = game.playerName.toUpperCase();
 
     screen.style.transition = 'opacity 0.5s';
@@ -923,14 +914,19 @@ function exitGame(reason) {
     document.getElementById('final-score').innerText = CONFIG.score;
     document.getElementById('result-screen').style.display = 'flex';
 
-    // 上傳分數
-    if (window.submitScore) {
+    // 如果還沒儲存過，這裡執行儲存
+    if (!game.isScoreSaved && window.submitScore) {
+        game.isScoreSaved = true;
         window.submitScore(game.playerName, CONFIG.score).then(() => {
-            // 上傳成功後稍微等一下再拉取排行榜，確保數據已更新
             setTimeout(() => {
                 if (window.fetchLeaderboard) window.fetchLeaderboard();
             }, 500);
         });
+    } else {
+        // 如果已經自動儲存過了，直接讀取排行榜
+        setTimeout(() => {
+            if (window.fetchLeaderboard) window.fetchLeaderboard();
+        }, 500);
     }
 }
 
